@@ -1,7 +1,11 @@
 # inspired by the https://github.com/thomasahle/sunfish user inferface
+from typing import Any
 
 import chess
 import argparse
+
+from chess import Move
+
 from movegeneration import next_move
 
 
@@ -21,7 +25,10 @@ def start():
     while not board.is_game_over():
         board.push(next_move(get_depth(), board, debug=True))
         print(render(board))
-        board.push(get_move(board))
+        move = get_move(board)
+        if move is None:
+            break
+        board.push(move)
 
     print(f"\nResult: [w] {board.result()} [b]")
 
@@ -59,11 +66,13 @@ def render(board: chess.Board) -> str:
     return "\n" + "\n".join(display)
 
 
-def get_move(board: chess.Board) -> chess.Move:
+def get_move(board: chess.Board) -> Move | None:
     """
     Try (and keep trying) to get a legal next move from the user.
     Play the move by mutating the game board.
     """
+    if len(list(board.legal_moves)) <= 0:
+        return None
     move = input(f"\nYour move (e.g. {list(board.legal_moves)[0]}):\n")
 
     for legal_move in board.legal_moves:
@@ -74,7 +83,7 @@ def get_move(board: chess.Board) -> chess.Move:
 
 def get_depth() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--depth", default=6, help="provide an integer (default: 6)")
+    parser.add_argument("--depth", default=4, help="provide an integer (default: 6)")
     args = parser.parse_args()
     return max([1, int(args.depth)])
 
